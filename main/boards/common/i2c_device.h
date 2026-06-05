@@ -13,6 +13,10 @@ protected:
     void WriteReg(uint8_t reg, uint8_t value);
     uint8_t ReadReg(uint8_t reg);
     void ReadRegs(uint8_t reg, uint8_t* buffer, size_t length);
+
+    esp_err_t WriteRegNoAbort(uint8_t reg, uint8_t value);
+    esp_err_t ReadRegNoAbort(uint8_t reg, uint8_t* value);
+    esp_err_t ReadRegsNoAbort(uint8_t reg, uint8_t* buffer, size_t length);
 };
 
 #endif // I2C_DEVICE_H

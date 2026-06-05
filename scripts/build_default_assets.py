@@ -30,7 +30,7 @@ def struct_pack_string(string, max_len=None):
     if max_len is None, max_len = len(string) + 1
     else len(string) < max_len, the left will be padded by struct.pack('x')
     """
-    if max_len == None :
+    if max_len is None :
         max_len = len(string)
     else:
         assert len(string) <= max_len
@@ -38,7 +38,7 @@ def struct_pack_string(string, max_len=None):
     left_num = max_len - len(string)
     out_bytes = None
     for char in string:
-        if out_bytes == None:
+        if out_bytes is None:
             out_bytes = struct.pack('b', ord(char))
         else:
             out_bytes += struct.pack('b', ord(char))
@@ -104,7 +104,7 @@ def pack_models(model_path, out_file="srmodels.bin"):
         
         for file_name in models[key]:
             model_bin += struct_pack_string(file_name, 32) # + file name
-            if data_bin == None:
+            if data_bin is None:
                 model_bin += struct.pack('I', header_len) 
                 data_bin = models[key][file_name]
                 model_bin += struct.pack('I', len(models[key][file_name]))
@@ -115,7 +115,7 @@ def pack_models(model_path, out_file="srmodels.bin"):
         
         out_bin += model_bin
     assert len(out_bin) == header_len
-    if data_bin != None:
+    if data_bin is not None:
         out_bin += data_bin
 
     out_file = os.path.join(model_path, out_file)
@@ -893,20 +893,28 @@ def main():
         # Determine language from multinet models
         language = get_language_from_multinet_models(multinet_model_names)
         
+        # Split by comma and strip whitespace
+        wake_words = [w.strip() for w in custom_wake_word_config['wake_word'].split(',')]
+        display_texts = [d.strip() for d in custom_wake_word_config['display'].split(',')]
+        
+        # Match display texts to wake words, padding with the first display text if necessary
+        commands = []
+        for i, word in enumerate(wake_words):
+            display = display_texts[i] if i < len(display_texts) else display_texts[0]
+            commands.append({
+                "command": word,
+                "text": display,
+                "action": "wake"
+            })
+            
         # Build multinet_model info structure
         multinet_model_info = {
             "language": language,
             "duration": 3000,  # Default duration in ms
             "threshold": custom_wake_word_config['threshold'],
-            "commands": [
-                {
-                    "command": custom_wake_word_config['wake_word'],
-                    "text": custom_wake_word_config['display'],
-                    "action": "wake"
-                }
-            ]
+            "commands": commands
         }
-        print(f"  custom wake word: {custom_wake_word_config['wake_word']} ({custom_wake_word_config['display']})")
+        print(f"  custom wake words: {', '.join(wake_words)}")
         print(f"  wake word language: {language}")
         print(f"  wake word threshold: {custom_wake_word_config['threshold']}")
     
@@ -915,8 +923,7 @@ def main():
         print("Warning: No assets to build (no SR models, text font, emoji collection, extra files, or custom wake word)")
         # Create an empty assets.bin file
         os.makedirs(os.path.dirname(args.output), exist_ok=True)
-        with open(args.output, 'wb') as f:
-            pass  # Create empty file
+        open(args.output, 'wb').close()
         print(f"Created empty assets.bin: {args.output}")
         return
     

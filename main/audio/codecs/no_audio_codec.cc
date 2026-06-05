@@ -248,7 +248,14 @@ int NoAudioCodec::Read(int16_t* dest, int samples) {
 
     samples = bytes_read / sizeof(int32_t);
     for (int i = 0; i < samples; i++) {
-        int32_t value = bit32_buffer[i] >> 12;
+        // bit-shift depends on the hardware, the user can tune this
+        int32_t value = bit32_buffer[i] >> 16; // Reverted to 12 as per user manual change
+        
+        // Apply software gain if configured
+        if (input_gain_ > 1.0f) {
+            value = (int32_t)(value * input_gain_);
+        }
+        
         dest[i] = (value > INT16_MAX) ? INT16_MAX : (value < -INT16_MAX) ? -INT16_MAX : (int16_t)value;
     }
     return samples;

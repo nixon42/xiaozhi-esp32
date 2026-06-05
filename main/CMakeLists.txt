@@ -731,6 +731,11 @@ elseif(CONFIG_BOARD_TYPE_ELECTRON_BOT)
     set(BUILTIN_TEXT_FONT font_puhui_20_4)
     set(BUILTIN_ICON_FONT font_awesome_20_4)
     set(DEFAULT_EMOJI_COLLECTION otto-gif)
+elseif(CONFIG_BOARD_TYPE_DESKBOT_MIMO)
+    set(BOARD_TYPE "deskbot-mimo")
+    set(BUILTIN_TEXT_FONT font_puhui_16_4)
+    set(BUILTIN_ICON_FONT font_awesome_16_4)
+    set(DEFAULT_EMOJI_COLLECTION otto-gif)
 elseif(CONFIG_BOARD_TYPE_BREAD_COMPACT_WIFI_CAM)
     set(BOARD_TYPE "bread-compact-wifi-s3cam")
     set(BUILTIN_TEXT_FONT font_puhui_basic_16_4)
@@ -800,6 +805,17 @@ else()
 endif()
 list(APPEND SOURCES ${BOARD_SOURCES})
 
+# Explicitly add new motor control sources for deskbot-mimo to avoid GLOB caching issues
+if(BOARD_TYPE STREQUAL "deskbot-mimo")
+    list(APPEND SOURCES 
+        "boards/deskbot-mimo/mcp_mimo.cc"
+        "boards/deskbot-mimo/tb6612fng.cc"
+        "boards/deskbot-mimo/drv8833.cc"
+        "boards/deskbot-mimo/vl53l0x.cc"
+    )
+    list(REMOVE_DUPLICATES SOURCES)
+endif()
+
 # Select audio processor according to Kconfig
 if(CONFIG_USE_AUDIO_PROCESSOR)
     list(APPEND SOURCES "audio/processors/afe_audio_processor.cc")
@@ -809,6 +825,7 @@ endif()
 if(CONFIG_IDF_TARGET_ESP32S3 OR CONFIG_IDF_TARGET_ESP32P4)
     list(APPEND SOURCES "audio/wake_words/afe_wake_word.cc")
     list(APPEND SOURCES "audio/wake_words/custom_wake_word.cc")
+    list(APPEND SOURCES "audio/wake_words/afe_custom_wake_word.cc")
 else()
     list(APPEND SOURCES "audio/wake_words/esp_wake_word.cc")
 endif()

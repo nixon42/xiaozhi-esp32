@@ -62,6 +62,8 @@ dependencies:
     version: ^1.1.1
     rules:
     - if: target in [esp32s3]
+  espressif/mqtt: "*"
+  espressif/cjson: "*"
   espressif/adc_battery_estimation: ^0.2.1
   espressif/esp_new_jpeg: ^0.6.1
 
