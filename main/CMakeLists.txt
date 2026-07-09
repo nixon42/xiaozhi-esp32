@@ -943,6 +943,10 @@ endif()
 
 file(GLOB COMMON_SOUNDS ${CMAKE_CURRENT_SOURCE_DIR}/assets/common/*.ogg)
 
+# Collect monolog audio files
+file(GLOB MONOLOG_SOUNDS ${CMAKE_CURRENT_SOURCE_DIR}/assets/monolog/*.ogg)
+set(MONOLOG_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/assets/monolog_config.h")
+
 # If target chip is ESP32, exclude specific files to avoid build errors
 if(CONFIG_IDF_TARGET_ESP32)
     list(REMOVE_ITEM SOURCES "audio/codecs/box_audio_codec.cc"
@@ -978,7 +982,7 @@ if(CONFIG_BOARD_TYPE_ESP_VOCAT)
 endif()
 
 idf_component_register(SRCS ${SOURCES}
-                    EMBED_FILES ${LANG_SOUNDS} ${COMMON_SOUNDS}
+                    EMBED_FILES ${LANG_SOUNDS} ${COMMON_SOUNDS} ${MONOLOG_SOUNDS}
                     INCLUDE_DIRS ${INCLUDE_DIRS}
                     WHOLE_ARCHIVE
                     PRIV_REQUIRES
@@ -1027,6 +1031,23 @@ add_custom_command(
 # Force build generation dependencies
 add_custom_target(lang_header ALL
     DEPENDS ${LANG_HEADER}
+)
+
+# Add monolog generation rules
+add_custom_command(
+    OUTPUT ${MONOLOG_HEADER}
+    COMMAND python ${PROJECT_DIR}/scripts/gen_monolog.py
+            --input_dir "${CMAKE_CURRENT_SOURCE_DIR}/assets/monolog"
+            --output "${MONOLOG_HEADER}"
+    DEPENDS
+        ${PROJECT_DIR}/scripts/gen_monolog.py
+        ${MONOLOG_SOUNDS}
+    COMMENT "Generating monolog config"
+)
+
+# Force build generation dependencies for monolog
+add_custom_target(monolog_header ALL
+    DEPENDS ${MONOLOG_HEADER}
 )
 
 # Find ESP-SR component dynamically

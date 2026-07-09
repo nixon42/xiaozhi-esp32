@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Target destination
-DEST="nixon@192.168.10.6:~/Project/xiaozhi-esp32"
+DEST="nixon@192.168.99.10:~/Project/xiaozhi-esp32"
 
 # Get project root (one level up from scripts/ directory)
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"

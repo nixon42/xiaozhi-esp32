@@ -1,9 +1,13 @@
 #include "deskbot_mimo_display.h"
 #include <esp_log.h>
+#include <esp_random.h>
 #include <cstring>
 #include <cmath>
 #include "gifs.h"
 #include "application.h"
+#include "board.h"
+#include "assets/lang_config.h"
+#include "assets/monolog_config.h"
 
 #define TAG "MimoDisplay"
 
@@ -115,6 +119,7 @@ void MimoEmojiDisplay::SetEmotion(const char* emotion) {
     
     // Any activity should wake the display and reset the idle timer
     idle_frames_counter_ = 0;
+    is_monolog_animating_ = false;
     if (display_off_) {
         display_off_ = false;
         ssd1306_display_on(oled_dev_, true);
@@ -166,6 +171,7 @@ void MimoEmojiDisplay::SetStatus(const char* status) {
     
     // Any activity should wake the display and reset the idle timer
     idle_frames_counter_ = 0;
+    is_monolog_animating_ = false;
     if (display_off_) {
         display_off_ = false;
         ssd1306_display_on(oled_dev_, true);
@@ -223,6 +229,26 @@ void MimoEmojiDisplay::SetPowerSaveMode(bool on) {
 }
 
 void MimoEmojiDisplay::UpdateStatusBar(bool update_all) {
+    auto& app = Application::GetInstance();
+    auto& board = Board::GetInstance();
+    
+    int battery_level;
+    bool charging, discharging;
+    if (board.GetBatteryLevel(battery_level, charging, discharging)) {
+        if (battery_level <= 20 && discharging) {
+            if (!is_low_battery_notified_) {
+                is_low_battery_notified_ = true;
+                ESP_LOGW(TAG, "Low battery detected! Level: %d%%", battery_level);
+                
+                SetEmotion("sad");
+                app.Schedule([&app]() {
+                    app.PlaySound(Lang::Sounds::OGG_LOW_BATTERY);
+                });
+            }
+        } else {
+            is_low_battery_notified_ = false;
+        }
+    }
 }
 
 bool MimoEmojiDisplay::Lock(int timeout_ms) {
@@ -241,6 +267,12 @@ void MimoEmojiDisplay::AnimationTimerCallback(void* arg) {
 void MimoEmojiDisplay::UpdateAnimation() {
     std::lock_guard<std::mutex> lock(mutex_);
 
+    if (is_monolog_animating_ && frame_index_ >= 250) {
+        is_monolog_animating_ = false;
+        current_expression_ = EXPRESSION_GIF_STATIC;
+        frame_index_ = 0;
+    }
+
     // Auto-sleep logic: Neutral -> Sleepy (1 min) -> OFF (another 1 min)
     if (current_expression_ == EXPRESSION_GIF_STATIC || current_expression_ == EXPRESSION_GIF_SLEEPY) {
         idle_frames_counter_++;
@@ -251,9 +283,26 @@ void MimoEmojiDisplay::UpdateAnimation() {
         }
         // Total 2 minutes for display OFF (2857 frames)
         if (idle_frames_counter_ >= 2857) {
-            if (!display_off_) {
-                display_off_ = true;
-                ssd1306_display_on(oled_dev_, false);
+            // Override display off with random monologue
+            idle_frames_counter_ = 0;
+            
+            int rand_exp = esp_random() % 3;
+            if (rand_exp == 0) current_expression_ = EXPRESSION_BUXUE;
+            else if (rand_exp == 1) current_expression_ = EXPRESSION_LISTENING;
+            else current_expression_ = EXPRESSION_GIF_HAPPY;
+            
+            frame_index_ = 0;
+            is_monolog_animating_ = true;
+
+            if (!Lang::Monolog::SOUNDS.empty()) {
+                int rand_idx = esp_random() % Lang::Monolog::SOUNDS.size();
+                auto sound_info = Lang::Monolog::SOUNDS[rand_idx];
+                auto& app = Application::GetInstance();
+                app.Schedule([&app, sound_info]() {
+                    printf("{\"event\": \"play_monolog\", \"file\": \"%s\"}\n", sound_info.filename);
+                    fflush(stdout);
+                    app.PlaySound(sound_info.data);
+                });
             }
             return;
         }

@@ -10,6 +10,7 @@
 #include <driver/spi_common.h>
 #include "ssd1306.h"
 #include "mcp_mimo.h"
+#include "adc_battery_monitor.h"
 
 #define TAG "DeskbotMimoBoard"
 
@@ -21,6 +22,12 @@ private:
     AudioCodec* audio_codec_ = nullptr;
     Led* led_ = nullptr;
     McpMimo* mcp_ = nullptr;
+    AdcBatteryMonitor* adc_battery_monitor_ = nullptr;
+
+    void InitializeBatteryMonitor() {
+        // Gunakan resistor 100k dan 100k, ADC_UNIT_1_CH9 ada di GPIO 10
+        adc_battery_monitor_ = new AdcBatteryMonitor(ADC_UNIT_1, ADC_CHANNEL_9, 100000, 100000, GPIO_NUM_NC);
+    }
 
     void InitializeSsd1306Display() {
         ESP_LOGI(TAG, "Initializing custom SSD1306 driver...");
@@ -74,6 +81,14 @@ public:
         InitializeAudioCodec();
         InitializeLed();
         InitializeButtons();
+        InitializeBatteryMonitor();
+    }
+
+    virtual bool GetBatteryLevel(int& level, bool& charging, bool& discharging) override {
+        charging = adc_battery_monitor_->IsCharging();
+        discharging = adc_battery_monitor_->IsDischarging();
+        level = adc_battery_monitor_->GetBatteryLevel();
+        return true;
     }
 
     virtual AudioCodec* GetAudioCodec() override {

@@ -43,7 +43,9 @@ private:
     int idle_speed_divisor_ = 2;
     int idle_frames_counter_ = 0;
     bool display_off_ = false;
+    bool is_monolog_animating_ = false;
     expression_t idle_sub_exp_ = EXPRESSION_GIF_STATIC;
+    bool is_low_battery_notified_ = false;
     std::mutex mutex_;
     esp_timer_handle_t animation_timer_ = nullptr;
     std::string debug_text_;

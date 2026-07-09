@@ -76,6 +76,16 @@ Sensor jarak Time-of-Flight (ToF) untuk deteksi objek.
 > [!NOTE]
 > Sensor ini menggunakan alamat I2C default `0x29`. Pastikan modul ditenagai dengan 3.3V.
 
+### G. Sensor Baterai (ADC)
+Digunakan untuk membaca tegangan baterai menggunakan pembagi tegangan (voltage divider).
+
+| Fungsi | Pin ESP32-S3 | Keterangan |
+| :--- | :---: | :--- |
+| **Battery ADC** | GPIO 10 | ADC1_CH9 untuk membaca level baterai |
+
+> [!NOTE]
+> Direkomendasikan menggunakan resistor pembagi tegangan, misalnya R1=100k dan R2=100k, agar rentang tegangan baterai (0-4.2V) dapat dibaca oleh ESP32 dalam rentang tegangan aman (0-2.1V).
+
 ## 3. Modul yang Disarankan
 - **OLED**: SSD1306 128x64 dengan interface 7-pin SPI.
 - **Audio Output**: MAX98357A I2S Amplifier.

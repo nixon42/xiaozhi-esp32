@@ -33,6 +33,9 @@ struct HardwareConfig {
     gpio_num_t motor_bin1_pin;
     gpio_num_t motor_bin2_pin;
     gpio_num_t motor_stby_pin;
+
+    // Battery Monitor
+    gpio_num_t battery_adc_pin;
 };
 
 // Default pins for Deskbot Mimo (ESP32-S3)
@@ -58,6 +61,8 @@ constexpr HardwareConfig DESKBOT_MIMO_CONFIG = {
     .motor_bin1_pin = GPIO_NUM_9,
     .motor_bin2_pin = GPIO_NUM_10,
     .motor_stby_pin = GPIO_NUM_11,
+
+    .battery_adc_pin = GPIO_NUM_10,
 };
 
 #define LCD_TYPE_SSD1306_SPI

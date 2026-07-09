@@ -133,7 +133,7 @@ void McpMimo::ActionTask(void* arg) {
 
             bool is_turning = (params.action_type == ACTION_TURN_LEFT || params.action_type == ACTION_TURN_RIGHT);
             if (is_turning) {
-                duty = 80;
+                duty = 100;
             }
 
             int left_speed = 0;
@@ -155,9 +155,9 @@ void McpMimo::ActionTask(void* arg) {
             }
 
             int total_time_ms = params.steps * STEP_DURATION_MS;
-            // if (is_turning) {
-            //     total_time_ms = (int)(total_time_ms * 2.0f);
-            // }
+            if (is_turning) {
+                total_time_ms = (int)(total_time_ms * 2.0f);
+            }
 
 #define RAMP_TIME_MS      600
 #define UPDATE_INTERVAL   10
@@ -175,13 +175,14 @@ void McpMimo::ActionTask(void* arg) {
                 bool is_turning = (params.action_type == ACTION_TURN_LEFT || params.action_type == ACTION_TURN_RIGHT);
 
                 if (is_turning) {
-                    // Start from 50% power and ramp quadratically to target
-                    if (elapsed < current_ramp_time) {
-                        float p = (float)elapsed / current_ramp_time;
-                        factor = 0.6f + (p * p * 0.5f);
-                    } else if (elapsed > total_time_ms - current_ramp_time) {
+                    // HAPUS SOFT-START: Berikan tendangan 100% instan untuk skid steering 
+                    // agar tidak nyangkut (stall) yang menyebabkan DRV8833 mati karena Over-Current.
+                    factor = 1.0f;
+                    
+                    // Opsional: kita tetap beri ramp-down di akhir agar berhentinya mulus
+                    if (elapsed > total_time_ms - current_ramp_time) {
                         float p = (float)(total_time_ms - elapsed) / current_ramp_time;
-                        factor = 0.6f + (p * p * 0.5f);
+                        factor = 0.6f + (p * p * 0.4f);
                     }
                 } else {
                     // Quadratic ramping from 0 for forward/backward
@@ -212,7 +213,7 @@ void McpMimo::ActionTask(void* arg) {
                         ESP_LOGW(TAG, "CLIFF DETECTED! Distance: %dmm. Emergency Escape!", dist);
                         
                         // Emergency Escape: Move backward at 100% speed for 1 step
-                        controller->driver_->Move(-40, -40);
+                        controller->driver_->Move(-35, -35);
                         vTaskDelay(pdMS_TO_TICKS(STEP_DURATION_MS));
                         controller->driver_->Stop();
                         
