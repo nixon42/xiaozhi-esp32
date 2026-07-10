@@ -241,7 +241,8 @@ void MimoEmojiDisplay::UpdateStatusBar(bool update_all) {
                 is_low_battery_notified_ = true;
                 ESP_LOGW(TAG, "Low battery detected! Level: %d%%", battery_level);
                 
-                // Jangan paksakan SetEmotion("sad") agar tidak mengunci state wajah/attract mode
+                // Set wajah menjadi sedih sementara
+                SetEmotion("sad");
                 app.Schedule([&app]() {
                     app.PlaySound(Lang::Sounds::OGG_LOW_BATTERY);
                 });
@@ -362,6 +363,14 @@ void MimoEmojiDisplay::UpdateAnimation() {
             case EXPRESSION_GIF_SAD: {
                 int display_index = frame_index_ / 2;
                 if (display_index >= 24) {
+                    // Cukup 3x loop (1 loop = 34 ping-pong frame) lalu kembali ke idle
+                    if (display_index >= 24 + 34 * 3) {
+                        current_expression_ = EXPRESSION_GIF_STATIC;
+                        frame_index_ = 0;
+                        idle_frames_counter_ = 0;
+                        break;
+                    }
+
                     // Ping-pong loop between frames 8-25 (indices 7-24)
                     // Start backward from max_index (24) for seamless entry
                     int rel = (display_index - 24) % 34;
