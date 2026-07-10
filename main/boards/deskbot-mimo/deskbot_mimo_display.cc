@@ -235,12 +235,13 @@ void MimoEmojiDisplay::UpdateStatusBar(bool update_all) {
     int battery_level;
     bool charging, discharging;
     if (board.GetBatteryLevel(battery_level, charging, discharging)) {
-        if (battery_level <= 20 && discharging) {
+        // Jika level 0%, asumsikan tidak ada baterai (selalu dicolok USB), jadi abaikan.
+        if (battery_level > 0 && battery_level <= 20 && discharging) {
             if (!is_low_battery_notified_) {
                 is_low_battery_notified_ = true;
                 ESP_LOGW(TAG, "Low battery detected! Level: %d%%", battery_level);
                 
-                SetEmotion("sad");
+                // Jangan paksakan SetEmotion("sad") agar tidak mengunci state wajah/attract mode
                 app.Schedule([&app]() {
                     app.PlaySound(Lang::Sounds::OGG_LOW_BATTERY);
                 });
