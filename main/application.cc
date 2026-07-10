@@ -108,33 +108,12 @@ Application::Application() {
         .skip_unhandled_events = true
     };
     esp_timer_create(&clock_timer_args, &clock_timer_handle_);
-
-    // Debounce timer for ATTRACT trigger: fires 3s after robot becomes idle
-    // This prevents false ATTRACT triggers during quick speaking->listening->idle transitions
-    esp_timer_create_args_t attract_timer_args = {
-        .callback = [](void* arg) {
-            Application* app = (Application*)arg;
-            // Only fire if still idle
-            if (app->GetDeviceState() == kDeviceStateIdle) {
-                app->SendUITrigger("ATTRACT");
-            }
-        },
-        .arg = this,
-        .dispatch_method = ESP_TIMER_TASK,
-        .name = "attract_debounce",
-        .skip_unhandled_events = true
-    };
-    esp_timer_create(&attract_timer_args, &attract_debounce_timer_);
 }
 
 Application::~Application() {
     if (clock_timer_handle_ != nullptr) {
         esp_timer_stop(clock_timer_handle_);
         esp_timer_delete(clock_timer_handle_);
-    }
-    if (attract_debounce_timer_ != nullptr) {
-        esp_timer_stop(attract_debounce_timer_);
-        esp_timer_delete(attract_debounce_timer_);
     }
     vEventGroupDelete(event_group_);
 }
@@ -179,23 +158,16 @@ void Application::Initialize() {
     state_machine_.AddStateChangeListener([this](DeviceState old_state, DeviceState new_state) {
         switch (new_state) {
             case kDeviceStateListening:
-                // Cancel any pending ATTRACT debounce
-                esp_timer_stop(attract_debounce_timer_);
                 this->SendUITrigger("LISTENING");
                 break;
             case kDeviceStateConnecting:
-                esp_timer_stop(attract_debounce_timer_);
                 this->SendUITrigger("THINKING");
                 break;
             case kDeviceStateSpeaking:
-                esp_timer_stop(attract_debounce_timer_);
                 this->SendUITrigger("SPEAKING");
                 break;
             case kDeviceStateIdle:
-                // Debounce: wait 3 seconds before switching display to ATTRACT
-                // This prevents flickering when robot quickly cycles speaking->listening->idle
-                esp_timer_stop(attract_debounce_timer_);
-                esp_timer_start_once(attract_debounce_timer_, 3000000ULL); // 3 seconds
+                this->SendUITrigger("ATTRACT");
                 break;
             default:
                 break;
