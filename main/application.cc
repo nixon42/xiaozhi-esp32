@@ -12,12 +12,43 @@
 
 #include <cstring>
 #include <esp_log.h>
+#include <esp_http_client.h>
+#include <freertos/task.h>
 #include <cJSON.h>
 #include <driver/gpio.h>
 #include <arpa/inet.h>
 #include <font_awesome.h>
 
 #define TAG "Application"
+#define DISPLAY_ENGINE_URL "http://192.168.10.5:8080/api/trigger"
+
+static void http_trigger_task(void *pvParameters) {
+    const char* event_str = (const char*)pvParameters;
+    if (event_str == nullptr) {
+        vTaskDelete(NULL);
+        return;
+    }
+
+    char url[256];
+    snprintf(url, sizeof(url), "%s?event=%s", DISPLAY_ENGINE_URL, event_str);
+
+    esp_http_client_config_t config = {};
+    config.url = url;
+    config.timeout_ms = 1000;
+    
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    if (client) {
+        esp_err_t err = esp_http_client_perform(client);
+        if (err != ESP_OK) {
+            ESP_LOGW(TAG, "UI Trigger HTTP GET failed: %s", esp_err_to_name(err));
+        } else {
+            ESP_LOGI(TAG, "Sent UI Trigger: %s", event_str);
+        }
+        esp_http_client_cleanup(client);
+    }
+    
+    vTaskDelete(NULL);
+}
 
 
 Application::Application() {
@@ -88,6 +119,31 @@ void Application::Initialize() {
     // Add state change listeners
     state_machine_.AddStateChangeListener([this](DeviceState old_state, DeviceState new_state) {
         xEventGroupSetBits(event_group_, MAIN_EVENT_STATE_CHANGED);
+    });
+
+    // Add UI Trigger state change listener
+    state_machine_.AddStateChangeListener([](DeviceState old_state, DeviceState new_state) {
+        const char* event_str = nullptr;
+        switch (new_state) {
+            case kDeviceStateListening:
+                event_str = "LISTENING";
+                break;
+            case kDeviceStateConnecting:
+                event_str = "THINKING";
+                break;
+            case kDeviceStateSpeaking:
+                event_str = "SPEAKING";
+                break;
+            case kDeviceStateIdle:
+                event_str = "ATTRACT";
+                break;
+            default:
+                break;
+        }
+
+        if (event_str) {
+            xTaskCreate(http_trigger_task, "http_trigger", 4096, (void*)event_str, 2, NULL);
+        }
     });
 
     // Start the clock timer to update the status bar
