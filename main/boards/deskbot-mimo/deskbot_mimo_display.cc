@@ -301,6 +301,16 @@ void MimoEmojiDisplay::UpdateAnimation() {
                 app.Schedule([&app, sound_info]() {
                     printf("{\"event\": \"play_monolog\", \"file\": \"%s\"}\n", sound_info.filename);
                     fflush(stdout);
+
+                    // Send UI Trigger for PLAY_MONOLOGUE
+                    char signal_name[64];
+                    strncpy(signal_name, sound_info.filename, sizeof(signal_name));
+                    signal_name[sizeof(signal_name) - 1] = '\0';
+                    char* dot = strrchr(signal_name, '.');
+                    if (dot) *dot = '\0';
+
+                    app.SendUITrigger("PLAY_MONOLOGUE", signal_name);
+
                     app.PlaySound(sound_info.data);
                 });
             }

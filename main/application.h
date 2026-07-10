@@ -63,6 +63,11 @@ public:
      */
     void Run();
 
+    /**
+     * Send HTTP GET Trigger to Display Engine
+     */
+    void SendUITrigger(const char* event, const char* signal = nullptr);
+
     DeviceState GetDeviceState() const { return state_machine_.GetState(); }
     bool IsVoiceDetected() const { return audio_service_.IsVoiceDetected(); }
     

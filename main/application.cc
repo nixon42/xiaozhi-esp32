@@ -22,15 +22,24 @@
 #define TAG "Application"
 #define DISPLAY_ENGINE_URL "http://192.168.10.5:8080/api/trigger"
 
+struct HttpTriggerArgs {
+    char event[32];
+    char signal[64];
+};
+
 static void http_trigger_task(void *pvParameters) {
-    const char* event_str = (const char*)pvParameters;
-    if (event_str == nullptr) {
+    HttpTriggerArgs* args = (HttpTriggerArgs*)pvParameters;
+    if (args == nullptr) {
         vTaskDelete(NULL);
         return;
     }
 
     char url[256];
-    snprintf(url, sizeof(url), "%s?event=%s", DISPLAY_ENGINE_URL, event_str);
+    if (strlen(args->signal) > 0) {
+        snprintf(url, sizeof(url), "%s?event=%s&signal=%s", DISPLAY_ENGINE_URL, args->event, args->signal);
+    } else {
+        snprintf(url, sizeof(url), "%s?event=%s", DISPLAY_ENGINE_URL, args->event);
+    }
 
     esp_http_client_config_t config = {};
     config.url = url;
@@ -42,14 +51,33 @@ static void http_trigger_task(void *pvParameters) {
         if (err != ESP_OK) {
             ESP_LOGW(TAG, "UI Trigger HTTP GET failed: %s", esp_err_to_name(err));
         } else {
-            ESP_LOGI(TAG, "Sent UI Trigger: %s", event_str);
+            if (strlen(args->signal) > 0) {
+                ESP_LOGI(TAG, "Sent UI Trigger: %s (Signal: %s)", args->event, args->signal);
+            } else {
+                ESP_LOGI(TAG, "Sent UI Trigger: %s", args->event);
+            }
         }
         esp_http_client_cleanup(client);
     }
     
+    delete args;
     vTaskDelete(NULL);
 }
 
+void Application::SendUITrigger(const char* event, const char* signal) {
+    HttpTriggerArgs* args = new HttpTriggerArgs();
+    strncpy(args->event, event, sizeof(args->event) - 1);
+    args->event[sizeof(args->event) - 1] = '\0';
+    
+    if (signal) {
+        strncpy(args->signal, signal, sizeof(args->signal) - 1);
+        args->signal[sizeof(args->signal) - 1] = '\0';
+    } else {
+        args->signal[0] = '\0';
+    }
+    
+    xTaskCreate(http_trigger_task, "http_trigger", 4096, args, 2, NULL);
+}
 
 Application::Application() {
     event_group_ = xEventGroupCreate();
@@ -122,27 +150,22 @@ void Application::Initialize() {
     });
 
     // Add UI Trigger state change listener
-    state_machine_.AddStateChangeListener([](DeviceState old_state, DeviceState new_state) {
-        const char* event_str = nullptr;
+    state_machine_.AddStateChangeListener([this](DeviceState old_state, DeviceState new_state) {
         switch (new_state) {
             case kDeviceStateListening:
-                event_str = "LISTENING";
+                this->SendUITrigger("LISTENING");
                 break;
             case kDeviceStateConnecting:
-                event_str = "THINKING";
+                this->SendUITrigger("THINKING");
                 break;
             case kDeviceStateSpeaking:
-                event_str = "SPEAKING";
+                this->SendUITrigger("SPEAKING");
                 break;
             case kDeviceStateIdle:
-                event_str = "ATTRACT";
+                this->SendUITrigger("ATTRACT");
                 break;
             default:
                 break;
-        }
-
-        if (event_str) {
-            xTaskCreate(http_trigger_task, "http_trigger", 4096, (void*)event_str, 2, NULL);
         }
     });
 
