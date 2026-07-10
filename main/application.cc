@@ -49,12 +49,17 @@ static void http_trigger_task(void *pvParameters) {
     if (client) {
         esp_err_t err = esp_http_client_perform(client);
         if (err != ESP_OK) {
-            ESP_LOGW(TAG, "UI Trigger HTTP GET failed: %s", esp_err_to_name(err));
+            ESP_LOGE(TAG, "UI Trigger HTTP GET failed: %s (Check Windows Firewall / IP / Port)", esp_err_to_name(err));
         } else {
-            if (strlen(args->signal) > 0) {
-                ESP_LOGI(TAG, "Sent UI Trigger: %s (Signal: %s)", args->event, args->signal);
+            int status_code = esp_http_client_get_status_code(client);
+            if (status_code == 200) {
+                if (strlen(args->signal) > 0) {
+                    ESP_LOGI(TAG, "Sent UI Trigger OK (200): %s (Signal: %s)", args->event, args->signal);
+                } else {
+                    ESP_LOGI(TAG, "Sent UI Trigger OK (200): %s", args->event);
+                }
             } else {
-                ESP_LOGI(TAG, "Sent UI Trigger: %s", args->event);
+                ESP_LOGW(TAG, "UI Trigger HTTP GET returned Error Code: %d for event: %s", status_code, args->event);
             }
         }
         esp_http_client_cleanup(client);
