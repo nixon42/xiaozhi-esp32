@@ -44,6 +44,7 @@ private:
     int idle_frames_counter_ = 0;
     bool display_off_ = false;
     bool is_monolog_animating_ = false;
+    int last_monolog_idx_ = -1;
     expression_t idle_sub_exp_ = EXPRESSION_GIF_STATIC;
     bool is_low_battery_notified_ = false;
     std::mutex mutex_;

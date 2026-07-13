@@ -57,6 +57,54 @@ namespace Lang {
         extern const char ogg_T012_en_end[] asm("_binary_T012_en_ogg_end");
         extern const char ogg_T012_id_start[] asm("_binary_T012_id_ogg_start");
         extern const char ogg_T012_id_end[] asm("_binary_T012_id_ogg_end");
+        extern const char ogg_T013_en_start[] asm("_binary_T013_en_ogg_start");
+        extern const char ogg_T013_en_end[] asm("_binary_T013_en_ogg_end");
+        extern const char ogg_T013_id_start[] asm("_binary_T013_id_ogg_start");
+        extern const char ogg_T013_id_end[] asm("_binary_T013_id_ogg_end");
+        extern const char ogg_T014_en_start[] asm("_binary_T014_en_ogg_start");
+        extern const char ogg_T014_en_end[] asm("_binary_T014_en_ogg_end");
+        extern const char ogg_T014_id_start[] asm("_binary_T014_id_ogg_start");
+        extern const char ogg_T014_id_end[] asm("_binary_T014_id_ogg_end");
+        extern const char ogg_T015_en_start[] asm("_binary_T015_en_ogg_start");
+        extern const char ogg_T015_en_end[] asm("_binary_T015_en_ogg_end");
+        extern const char ogg_T015_id_start[] asm("_binary_T015_id_ogg_start");
+        extern const char ogg_T015_id_end[] asm("_binary_T015_id_ogg_end");
+        extern const char ogg_T016_en_start[] asm("_binary_T016_en_ogg_start");
+        extern const char ogg_T016_en_end[] asm("_binary_T016_en_ogg_end");
+        extern const char ogg_T016_id_start[] asm("_binary_T016_id_ogg_start");
+        extern const char ogg_T016_id_end[] asm("_binary_T016_id_ogg_end");
+        extern const char ogg_T017_en_start[] asm("_binary_T017_en_ogg_start");
+        extern const char ogg_T017_en_end[] asm("_binary_T017_en_ogg_end");
+        extern const char ogg_T017_id_start[] asm("_binary_T017_id_ogg_start");
+        extern const char ogg_T017_id_end[] asm("_binary_T017_id_ogg_end");
+        extern const char ogg_T018_en_start[] asm("_binary_T018_en_ogg_start");
+        extern const char ogg_T018_en_end[] asm("_binary_T018_en_ogg_end");
+        extern const char ogg_T018_id_start[] asm("_binary_T018_id_ogg_start");
+        extern const char ogg_T018_id_end[] asm("_binary_T018_id_ogg_end");
+        extern const char ogg_T019_en_start[] asm("_binary_T019_en_ogg_start");
+        extern const char ogg_T019_en_end[] asm("_binary_T019_en_ogg_end");
+        extern const char ogg_T019_id_start[] asm("_binary_T019_id_ogg_start");
+        extern const char ogg_T019_id_end[] asm("_binary_T019_id_ogg_end");
+        extern const char ogg_T020_en_start[] asm("_binary_T020_en_ogg_start");
+        extern const char ogg_T020_en_end[] asm("_binary_T020_en_ogg_end");
+        extern const char ogg_T020_id_start[] asm("_binary_T020_id_ogg_start");
+        extern const char ogg_T020_id_end[] asm("_binary_T020_id_ogg_end");
+        extern const char ogg_T021_en_start[] asm("_binary_T021_en_ogg_start");
+        extern const char ogg_T021_en_end[] asm("_binary_T021_en_ogg_end");
+        extern const char ogg_T021_id_start[] asm("_binary_T021_id_ogg_start");
+        extern const char ogg_T021_id_end[] asm("_binary_T021_id_ogg_end");
+        extern const char ogg_T022_en_start[] asm("_binary_T022_en_ogg_start");
+        extern const char ogg_T022_en_end[] asm("_binary_T022_en_ogg_end");
+        extern const char ogg_T022_id_start[] asm("_binary_T022_id_ogg_start");
+        extern const char ogg_T022_id_end[] asm("_binary_T022_id_ogg_end");
+        extern const char ogg_T023_en_start[] asm("_binary_T023_en_ogg_start");
+        extern const char ogg_T023_en_end[] asm("_binary_T023_en_ogg_end");
+        extern const char ogg_T023_id_start[] asm("_binary_T023_id_ogg_start");
+        extern const char ogg_T023_id_end[] asm("_binary_T023_id_ogg_end");
+        extern const char ogg_T024_en_start[] asm("_binary_T024_en_ogg_start");
+        extern const char ogg_T024_en_end[] asm("_binary_T024_en_ogg_end");
+        extern const char ogg_T024_id_start[] asm("_binary_T024_id_ogg_start");
+        extern const char ogg_T024_id_end[] asm("_binary_T024_id_ogg_end");
         static const std::vector<SoundInfo> SOUNDS = {
             {
                 "T001_en.ogg",
@@ -217,6 +265,174 @@ namespace Lang {
                 std::string_view(
                     static_cast<const char*>(ogg_T012_id_start),
                     static_cast<size_t>(ogg_T012_id_end - ogg_T012_id_start)
+                )
+            },
+            {
+                "T013_en.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T013_en_start),
+                    static_cast<size_t>(ogg_T013_en_end - ogg_T013_en_start)
+                )
+            },
+            {
+                "T013_id.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T013_id_start),
+                    static_cast<size_t>(ogg_T013_id_end - ogg_T013_id_start)
+                )
+            },
+            {
+                "T014_en.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T014_en_start),
+                    static_cast<size_t>(ogg_T014_en_end - ogg_T014_en_start)
+                )
+            },
+            {
+                "T014_id.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T014_id_start),
+                    static_cast<size_t>(ogg_T014_id_end - ogg_T014_id_start)
+                )
+            },
+            {
+                "T015_en.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T015_en_start),
+                    static_cast<size_t>(ogg_T015_en_end - ogg_T015_en_start)
+                )
+            },
+            {
+                "T015_id.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T015_id_start),
+                    static_cast<size_t>(ogg_T015_id_end - ogg_T015_id_start)
+                )
+            },
+            {
+                "T016_en.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T016_en_start),
+                    static_cast<size_t>(ogg_T016_en_end - ogg_T016_en_start)
+                )
+            },
+            {
+                "T016_id.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T016_id_start),
+                    static_cast<size_t>(ogg_T016_id_end - ogg_T016_id_start)
+                )
+            },
+            {
+                "T017_en.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T017_en_start),
+                    static_cast<size_t>(ogg_T017_en_end - ogg_T017_en_start)
+                )
+            },
+            {
+                "T017_id.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T017_id_start),
+                    static_cast<size_t>(ogg_T017_id_end - ogg_T017_id_start)
+                )
+            },
+            {
+                "T018_en.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T018_en_start),
+                    static_cast<size_t>(ogg_T018_en_end - ogg_T018_en_start)
+                )
+            },
+            {
+                "T018_id.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T018_id_start),
+                    static_cast<size_t>(ogg_T018_id_end - ogg_T018_id_start)
+                )
+            },
+            {
+                "T019_en.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T019_en_start),
+                    static_cast<size_t>(ogg_T019_en_end - ogg_T019_en_start)
+                )
+            },
+            {
+                "T019_id.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T019_id_start),
+                    static_cast<size_t>(ogg_T019_id_end - ogg_T019_id_start)
+                )
+            },
+            {
+                "T020_en.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T020_en_start),
+                    static_cast<size_t>(ogg_T020_en_end - ogg_T020_en_start)
+                )
+            },
+            {
+                "T020_id.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T020_id_start),
+                    static_cast<size_t>(ogg_T020_id_end - ogg_T020_id_start)
+                )
+            },
+            {
+                "T021_en.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T021_en_start),
+                    static_cast<size_t>(ogg_T021_en_end - ogg_T021_en_start)
+                )
+            },
+            {
+                "T021_id.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T021_id_start),
+                    static_cast<size_t>(ogg_T021_id_end - ogg_T021_id_start)
+                )
+            },
+            {
+                "T022_en.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T022_en_start),
+                    static_cast<size_t>(ogg_T022_en_end - ogg_T022_en_start)
+                )
+            },
+            {
+                "T022_id.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T022_id_start),
+                    static_cast<size_t>(ogg_T022_id_end - ogg_T022_id_start)
+                )
+            },
+            {
+                "T023_en.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T023_en_start),
+                    static_cast<size_t>(ogg_T023_en_end - ogg_T023_en_start)
+                )
+            },
+            {
+                "T023_id.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T023_id_start),
+                    static_cast<size_t>(ogg_T023_id_end - ogg_T023_id_start)
+                )
+            },
+            {
+                "T024_en.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T024_en_start),
+                    static_cast<size_t>(ogg_T024_en_end - ogg_T024_en_start)
+                )
+            },
+            {
+                "T024_id.ogg",
+                std::string_view(
+                    static_cast<const char*>(ogg_T024_id_start),
+                    static_cast<size_t>(ogg_T024_id_end - ogg_T024_id_start)
                 )
             }
         };

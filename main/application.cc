@@ -18,14 +18,19 @@
 #include <driver/gpio.h>
 #include <arpa/inet.h>
 #include <font_awesome.h>
+#include <esp_netif.h>
 
 #define TAG "Application"
-#define DISPLAY_ENGINE_URL "http://192.168.10.5:8080/api/trigger"
+#define DEFAULT_DISPLAY_ENGINE_IP "192.168.10.2"
+// Set this to e.g. "192.168.10.5" to force an IP and skip scanning entirely.
+#define OVERRIDE_DISPLAY_ENGINE_IP "" 
 
 struct HttpTriggerArgs {
     char event[32];
     char signal[64];
 };
+
+static std::mutex scan_mutex;
 
 static void http_trigger_task(void *pvParameters) {
     HttpTriggerArgs* args = (HttpTriggerArgs*)pvParameters;
@@ -34,36 +39,111 @@ static void http_trigger_task(void *pvParameters) {
         return;
     }
 
-    char url[256];
-    if (strlen(args->signal) > 0) {
-        snprintf(url, sizeof(url), "%s?event=%s&signal=%s", DISPLAY_ENGINE_URL, args->event, args->signal);
-    } else {
-        snprintf(url, sizeof(url), "%s?event=%s", DISPLAY_ENGINE_URL, args->event);
+    auto send_req = [&](const std::string& target_ip, int timeout_ms, bool is_scanning) -> int {
+        char url[256];
+        if (strlen(args->signal) > 0) {
+            snprintf(url, sizeof(url), "http://%s:8080/api/trigger?event=%s&signal=%s", target_ip.c_str(), args->event, args->signal);
+        } else {
+            snprintf(url, sizeof(url), "http://%s:8080/api/trigger?event=%s", target_ip.c_str(), args->event);
+        }
+
+        esp_http_client_config_t config = {};
+        config.url = url;
+        config.timeout_ms = timeout_ms;
+        
+        int status_code = 0;
+        esp_http_client_handle_t client = esp_http_client_init(&config);
+        if (client) {
+            esp_err_t err = esp_http_client_perform(client);
+            if (err == ESP_OK) {
+                status_code = esp_http_client_get_status_code(client);
+                if (!is_scanning) {
+                    if (status_code == 200) {
+                        if (strlen(args->signal) > 0) {
+                            ESP_LOGI(TAG, "Sent UI Trigger OK (200): %s (Signal: %s)", args->event, args->signal);
+                        } else {
+                            ESP_LOGI(TAG, "Sent UI Trigger OK (200): %s", args->event);
+                        }
+                    } else {
+                        ESP_LOGW(TAG, "UI Trigger HTTP GET returned Error Code: %d for event: %s", status_code, args->event);
+                    }
+                }
+            } else if (!is_scanning) {
+                ESP_LOGE(TAG, "UI Trigger HTTP GET failed: %s to %s", esp_err_to_name(err), target_ip.c_str());
+            }
+            esp_http_client_cleanup(client);
+        }
+        return status_code;
+    };
+
+    if (strlen(OVERRIDE_DISPLAY_ENGINE_IP) > 0) {
+        send_req(OVERRIDE_DISPLAY_ENGINE_IP, 1000, false);
+        delete args;
+        vTaskDelete(NULL);
+        return;
     }
 
-    esp_http_client_config_t config = {};
-    config.url = url;
-    config.timeout_ms = 1000;
+    Settings settings("kiosk", true);
+    std::string saved_ip = settings.GetString("ip", DEFAULT_DISPLAY_ENGINE_IP);
+
+    // Try saved IP first
+    if (!saved_ip.empty()) {
+        if (send_req(saved_ip, 1000, false) == 200) {
+            delete args;
+            vTaskDelete(NULL);
+            return;
+        }
+    }
+
+    // Saved IP failed, begin scanning
+    ESP_LOGW(TAG, "Kiosk IP %s unreachable. Scanning local network...", saved_ip.c_str());
     
-    esp_http_client_handle_t client = esp_http_client_init(&config);
-    if (client) {
-        esp_err_t err = esp_http_client_perform(client);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "UI Trigger HTTP GET failed: %s (Check Windows Firewall / IP / Port)", esp_err_to_name(err));
-        } else {
-            int status_code = esp_http_client_get_status_code(client);
-            if (status_code == 200) {
-                if (strlen(args->signal) > 0) {
-                    ESP_LOGI(TAG, "Sent UI Trigger OK (200): %s (Signal: %s)", args->event, args->signal);
-                } else {
-                    ESP_LOGI(TAG, "Sent UI Trigger OK (200): %s", args->event);
+    scan_mutex.lock();
+    // Check if another task already found the IP while we were waiting
+    std::string new_saved_ip = settings.GetString("ip", DEFAULT_DISPLAY_ENGINE_IP);
+    if (new_saved_ip != saved_ip && !new_saved_ip.empty()) {
+        if (send_req(new_saved_ip, 1000, false) == 200) {
+            scan_mutex.unlock();
+            delete args;
+            vTaskDelete(NULL);
+            return;
+        }
+    }
+
+    bool found = false;
+    esp_netif_t* netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+    if (netif) {
+        esp_netif_ip_info_t ip_info;
+        esp_netif_get_ip_info(netif, &ip_info);
+        struct in_addr ip_addr;
+        ip_addr.s_addr = ip_info.ip.addr;
+        std::string my_ip = inet_ntoa(ip_addr);
+        
+        size_t last_dot = my_ip.find_last_of('.');
+        if (last_dot != std::string::npos) {
+            std::string prefix = my_ip.substr(0, last_dot + 1);
+            for (int i = 1; i <= 20; i++) {
+                std::string target_ip = prefix + std::to_string(i);
+                // Skip our own IP
+                if (target_ip == my_ip) continue;
+
+                if (send_req(target_ip, 200, true) == 200) {
+                    ESP_LOGI(TAG, "Found Kiosk at %s", target_ip.c_str());
+                    settings.SetString("ip", target_ip);
+                    // Send real trigger so logging is done properly
+                    send_req(target_ip, 1000, false);
+                    found = true;
+                    break;
                 }
-            } else {
-                ESP_LOGW(TAG, "UI Trigger HTTP GET returned Error Code: %d for event: %s", status_code, args->event);
             }
         }
-        esp_http_client_cleanup(client);
     }
+
+    if (!found) {
+        ESP_LOGE(TAG, "Could not find Kiosk on network .1 to .20");
+    }
+
+    scan_mutex.unlock();
     
     delete args;
     vTaskDelete(NULL);
