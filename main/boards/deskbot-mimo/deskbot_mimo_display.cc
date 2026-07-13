@@ -275,16 +275,16 @@ void MimoEmojiDisplay::UpdateAnimation() {
         frame_index_ = 0;
     }
 
-    // Auto-sleep logic: Neutral -> Sleepy (1 min) -> OFF (another 1 min)
+    // Auto-sleep logic: Neutral -> Sleepy (40s) -> Monologue (another 20s)
     if (current_expression_ == EXPRESSION_GIF_STATIC || current_expression_ == EXPRESSION_GIF_SLEEPY) {
         idle_frames_counter_++;
-        // 1 minute = 60,000ms / 42ms per frame ≈ 1428 frames
-        if (current_expression_ == EXPRESSION_GIF_STATIC && idle_frames_counter_ >= 1428) {
+        // 40 seconds = 40,000ms / 42ms per frame ≈ 952 frames
+        if (current_expression_ == EXPRESSION_GIF_STATIC && idle_frames_counter_ >= 952) {
             current_expression_ = EXPRESSION_GIF_SLEEPY;
             frame_index_ = 0;
         }
-        // Total 2 minutes for display OFF (2857 frames)
-        if (idle_frames_counter_ >= 2857) {
+        // Total 1 minute for random monologue (1428 frames)
+        if (idle_frames_counter_ >= 1428) {
             // Override display off with random monologue
             idle_frames_counter_ = 0;
             
@@ -297,7 +297,16 @@ void MimoEmojiDisplay::UpdateAnimation() {
             is_monolog_animating_ = true;
 
             if (!Lang::Monolog::SOUNDS.empty()) {
-                int rand_idx = esp_random() % Lang::Monolog::SOUNDS.size();
+                int rand_idx;
+                if (Lang::Monolog::SOUNDS.size() > 1) {
+                    do {
+                        rand_idx = esp_random() % Lang::Monolog::SOUNDS.size();
+                    } while (rand_idx == last_monolog_idx_);
+                } else {
+                    rand_idx = 0;
+                }
+                last_monolog_idx_ = rand_idx;
+                
                 auto sound_info = Lang::Monolog::SOUNDS[rand_idx];
                 auto& app = Application::GetInstance();
                 app.Schedule([&app, sound_info]() {
