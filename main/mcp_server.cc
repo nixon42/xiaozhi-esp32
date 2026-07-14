@@ -122,12 +122,12 @@ void McpServer::AddCommonTools() {
 #endif
 
     AddTool("self.screen.change_kiosk_display",
-        "Change the external kiosk display screen to show specific information dashboards when requested by the user. Do not call this without being asked.\n"
+        "Change the external kiosk display screen to show specific information dashboards, only use when user ask about these subject.\n"
         "Valid events:\n"
-        " - SHOW_SOPHIE_INFO: Shows system architecture of SOPHIE.\n"
-        " - SHOW_AURA_INFO: Shows cosmic origin aura scanning results.\n"
-        " - SHOW_DAPURAI_INFO: Shows Dapur.AI corporate profile.\n"
-        " - SHOW_VIR_INFO: Shows Vortex Intelligence Robot (VIR) sensor radar.",
+        " - SHOW_SOPHIE_INFO: Shows Infographic about SOPHIE.\n"
+        " - SHOW_AURA_INFO: Shows Infograpchic about AURA project by dapur.ai.\n"
+        " - SHOW_DAPURAI_INFO: Shows Infographic about Dapur.AI corporate profile.\n"
+        " - SHOW_VIR_INFO: Shows Infographic about Vortex Intelligence Robot (VIR).",
         PropertyList({
             Property("event", kPropertyTypeString)
         }),
