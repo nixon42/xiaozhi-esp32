@@ -1,6 +1,6 @@
-# DAPUR.AI SOFIA - Robot Communication API
+# DAPUR.AI SOPHIE - Robot Communication API
 
-Dokumen ini menjelaskan bagaimana Firmware / Core Robot dapat mengirimkan sinyal perubahan *state* dan monolog ke UI (Display Engine) hanya menggunakan **HTTP GET Requests** sederhana.
+Dokumen ini menjelaskan bagaimana Firmware / Core Robot dapat mengirimkan sinyal perubahan *state*, monolog, dan tampilan layar ke UI (Display Engine) hanya menggunakan **HTTP GET Requests** sederhana.
 
 Tidak perlu menggunakan WebSocket atau MQTT. UI akan otomatis tersinkronisasi secara *real-time* begitu HTTP GET request diterima oleh *endpoint* trigger.
 
@@ -13,29 +13,34 @@ Display Engine (Web Server) mengekspos endpoint API di port **8080** (default pa
 
 ---
 
-## 2. Mengubah Mode Percakapan (Conversation State)
+## 2. Mengubah Mode Layar dan Percakapan (Display State)
 
-Setiap kali Robot mulai mendengarkan (*Listening*), berpikir (*Thinking*), atau berbicara (*Speaking*), kirimkan HTTP GET dengan parameter `event`.
+Setiap kali Robot berubah mode (mendengarkan, berbicara) atau ingin menampilkan halaman informasi (*dashboard*), kirimkan HTTP GET dengan parameter `event`.
 
 ### Endpoint
 `GET /api/trigger?event=<STATE>`
 
 ### Parameter yang Valid:
+
+**Mode Percakapan:**
 - `ATTRACT` : Mengembalikan UI ke mode Slideshow Monolog.
 - `LISTENING` : Mengubah UI ke animasi gelombang suara biru (Mic / Audio In).
 - `THINKING` : Mengubah UI ke animasi *neural network* ungu (Proses LLM).
 - `SPEAKING` : Mengubah UI ke animasi lingkaran emas (Audio Out).
+
+**Mode Layar Informasi (Kiosk Dashboards):**
+- `SHOW_SOPHIE_INFO` : Menampilkan arsitektur sistem robot SOPHIE (AI + Hardware).
+- `SHOW_AURA_INFO` : Menampilkan informasi tentang hasil foto *Aura / Cosmic Origin*.
+- `SHOW_DAPURAI_INFO` : Menampilkan profil perusahaan, keahlian, dan prinsip AI Dapur.AI.
+- `SHOW_VIR_INFO` : Menampilkan dashboard radar sensor dari *Vortex Intelligence Robot* (VIR).
 
 ### Contoh Request (cURL)
 ```bash
 # Robot mulai mendengarkan suara user
 curl "http://localhost:8080/api/trigger?event=LISTENING"
 
-# Robot sedang memproses teks dari LLM
-curl "http://localhost:8080/api/trigger?event=THINKING"
-
-# Robot sedang mengeluarkan suara balasan
-curl "http://localhost:8080/api/trigger?event=SPEAKING"
+# Memunculkan dashboard VIR
+curl "http://localhost:8080/api/trigger?event=SHOW_VIR_INFO"
 ```
 
 ---
