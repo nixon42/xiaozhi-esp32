@@ -121,6 +121,22 @@ void McpServer::AddCommonTools() {
     }
 #endif
 
+    AddTool("self.screen.change_kiosk_display",
+        "Change the external kiosk display screen to show specific information dashboards when requested by the user. Do not call this without being asked.\n"
+        "Valid events:\n"
+        " - SHOW_SOPHIE_INFO: Shows system architecture of SOPHIE.\n"
+        " - SHOW_AURA_INFO: Shows cosmic origin aura scanning results.\n"
+        " - SHOW_DAPURAI_INFO: Shows Dapur.AI corporate profile.\n"
+        " - SHOW_VIR_INFO: Shows Vortex Intelligence Robot (VIR) sensor radar.",
+        PropertyList({
+            Property("event", kPropertyTypeString)
+        }),
+        [](const PropertyList& properties) -> ReturnValue {
+            auto event = properties["event"].value<std::string>();
+            Application::GetInstance().SendUITrigger(event.c_str());
+            return true;
+        });
+
     // Restore the original tools list to the end of the tools list
     tools_.insert(tools_.end(), original_tools.begin(), original_tools.end());
 }
