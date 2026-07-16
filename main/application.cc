@@ -95,6 +95,14 @@ static void http_trigger_task(void *pvParameters) {
         }
     }
 
+    static bool has_scanned = false;
+    if (has_scanned) {
+        ESP_LOGD(TAG, "Kiosk IP unreachable. Skipping network scan (already scanned once).");
+        delete args;
+        vTaskDelete(NULL);
+        return;
+    }
+
     // Saved IP failed, begin scanning
     ESP_LOGW(TAG, "Kiosk IP %s unreachable. Scanning local network...", saved_ip.c_str());
     
@@ -109,6 +117,14 @@ static void http_trigger_task(void *pvParameters) {
             return;
         }
     }
+
+    if (has_scanned) {
+        scan_mutex.unlock();
+        delete args;
+        vTaskDelete(NULL);
+        return;
+    }
+    has_scanned = true;
 
     bool found = false;
     esp_netif_t* netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
