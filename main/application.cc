@@ -1279,8 +1279,8 @@ void Application::SetAecMode(AecMode mode) {
     });
 }
 
-void Application::PlaySound(const std::string_view& sound) {
-    audio_service_.PlaySound(sound);
+void Application::PlaySound(const std::string_view& sound, float volume_multiplier) {
+    audio_service_.PlaySound(sound, volume_multiplier);
 }
 
 void Application::ResetProtocol() {

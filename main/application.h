@@ -115,7 +115,7 @@ public:
     void SendMcpMessage(const std::string& payload);
     void SetAecMode(AecMode mode);
     AecMode GetAecMode() const { return aec_mode_; }
-    void PlaySound(const std::string_view& sound);
+    void PlaySound(const std::string_view& sound, float volume_multiplier = 1.0f);
     AudioService& GetAudioService() { return audio_service_; }
     
     /**

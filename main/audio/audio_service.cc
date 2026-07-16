@@ -640,7 +640,7 @@ void AudioService::SetCallbacks(AudioServiceCallbacks& callbacks) {
     callbacks_ = callbacks;
 }
 
-void AudioService::PlaySound(const std::string_view& ogg) {
+void AudioService::PlaySound(const std::string_view& ogg, float volume_multiplier) {
     if (!codec_->output_enabled()) {
         esp_timer_stop(audio_power_timer_);
         esp_timer_start_periodic(audio_power_timer_, AUDIO_POWER_CHECK_INTERVAL_MS * 1000);
@@ -651,11 +651,11 @@ void AudioService::PlaySound(const std::string_view& ogg) {
     size_t size = ogg.size();
 
     auto demuxer = std::make_unique<OggDemuxer>();
-    demuxer->OnDemuxerFinished([this](const uint8_t* data, int sample_rate, size_t size){
+    demuxer->OnDemuxerFinished([this, volume_multiplier](const uint8_t* data, int sample_rate, size_t size){
         auto packet = std::make_unique<AudioStreamPacket>();
         packet->sample_rate = sample_rate;
         packet->frame_duration = 60;
-        packet->volume_multiplier = 4.0; // Boost local sound volume
+        packet->volume_multiplier = volume_multiplier;
         packet->payload.resize(size);
         std::memcpy(packet->payload.data(), data, size);
         PushPacketToDecodeQueue(std::move(packet), true);

@@ -322,7 +322,15 @@ void MimoEmojiDisplay::UpdateAnimation() {
 
                     app.SendUITrigger("PLAY_MONOLOGUE", signal_name);
 
-                    app.PlaySound(sound_info.data);
+                    float volume_mult = 1.0f;
+                    int t_num = 0;
+                    if (sscanf(signal_name, "T%d", &t_num) == 1) {
+                        if (t_num >= 13 && t_num <= 24) {
+                            volume_mult = 4.0f;
+                        }
+                    }
+
+                    app.PlaySound(sound_info.data, volume_mult);
                 });
             }
             return;
