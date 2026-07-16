@@ -378,6 +378,15 @@ void AudioService::OpusCodecTask() {
                         resampled.resize(actual_output);
                         task->pcm = std::move(resampled);
                     }
+                    if (packet->volume_multiplier != 1.0f) {
+                        for (auto& sample : task->pcm) {
+                            float s = sample * packet->volume_multiplier;
+                            if (s > 32767.0f) s = 32767.0f;
+                            else if (s < -32768.0f) s = -32768.0f;
+                            sample = static_cast<int16_t>(s);
+                        }
+                    }
+
                     lock.lock();
                     audio_playback_queue_.push_back(std::move(task));
                     audio_queue_cv_.notify_all();
@@ -646,6 +655,7 @@ void AudioService::PlaySound(const std::string_view& ogg) {
         auto packet = std::make_unique<AudioStreamPacket>();
         packet->sample_rate = sample_rate;
         packet->frame_duration = 60;
+        packet->volume_multiplier = 4.0; // Boost local sound volume
         packet->payload.resize(size);
         std::memcpy(packet->payload.data(), data, size);
         PushPacketToDecodeQueue(std::move(packet), true);
