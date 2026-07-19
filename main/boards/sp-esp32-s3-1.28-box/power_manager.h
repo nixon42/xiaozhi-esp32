@@ -5,7 +5,7 @@
 #include <esp_timer.h>
 #include <driver/gpio.h>
 #include <esp_adc/adc_oneshot.h>
-#include <driver/adc.h>
+#include <hal/adc_types.h>
 #include <esp_log.h>
 
 class PowerManager {

@@ -79,7 +79,7 @@ void Nt26Board::StartNetwork() {
     modem_ = std::make_unique<UartEthModem>(config);
     modem_->SetDebug(false);
     
-    modem_->SetNetworkEventCallback([this](UartEthModem::UartEthModemEvent event) {
+    modem_->SetNetworkEventCallback([this](UartEthModem::UartEthModemEvent event, const std::string& msg) {
         switch (event) {
             case UartEthModem::UartEthModemEvent::Connected:
                 esp_timer_stop(network_ready_timer_);
@@ -109,6 +109,8 @@ void Nt26Board::StartNetwork() {
                 break;
             case UartEthModem::UartEthModemEvent::InFlightMode:
                 ESP_LOGW(TAG, "Modem in flight mode");
+                break;
+            default:
                 break;
         }
     });

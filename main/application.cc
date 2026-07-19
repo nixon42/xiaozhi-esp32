@@ -21,7 +21,7 @@
 #include <esp_netif.h>
 
 #define TAG "Application"
-#define DEFAULT_DISPLAY_ENGINE_IP "192.168.10.2"
+#define DEFAULT_DISPLAY_ENGINE_IP ""
 // Set this to e.g. "192.168.10.5" to force an IP and skip scanning entirely.
 #define OVERRIDE_DISPLAY_ENGINE_IP "" 
 
@@ -138,11 +138,12 @@ static void http_trigger_task(void *pvParameters) {
         size_t last_dot = my_ip.find_last_of('.');
         if (last_dot != std::string::npos) {
             std::string prefix = my_ip.substr(0, last_dot + 1);
-            for (int i = 1; i <= 20; i++) {
+            for (int i = 1; i <= 100; i++) {
                 std::string target_ip = prefix + std::to_string(i);
                 // Skip our own IP
                 if (target_ip == my_ip) continue;
 
+                ESP_LOGI(TAG, "Probing Kiosk IP: %s", target_ip.c_str());
                 if (send_req(target_ip, 200, true) == 200) {
                     ESP_LOGI(TAG, "Found Kiosk at %s", target_ip.c_str());
                     settings.SetString("ip", target_ip);
@@ -156,7 +157,7 @@ static void http_trigger_task(void *pvParameters) {
     }
 
     if (!found) {
-        ESP_LOGE(TAG, "Could not find Kiosk on network .1 to .20");
+        ESP_LOGE(TAG, "Could not find Kiosk on network .1 to .200");
     }
 
     scan_mutex.unlock();

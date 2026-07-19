@@ -1004,6 +1004,8 @@ idf_component_register(SRCS ${SOURCES}
                         efuse
                         bt
                         fatfs
+                        mbedtls
+                        mqtt
                         ${MAIN_PRIV_REQUIRES_EXTRA}
                     )
 
