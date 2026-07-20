@@ -147,10 +147,10 @@ void McpMimo::ActionTask(void* arg) {
                     left_speed = -duty; right_speed = -duty;
                     break;
                 case ACTION_TURN_LEFT:
-                    left_speed = duty; right_speed = -duty;
+                    left_speed = -duty; right_speed = duty;
                     break;
                 case ACTION_TURN_RIGHT:
-                    left_speed = -duty; right_speed = duty;
+                    left_speed = duty; right_speed = -duty;
                     break;
             }
 

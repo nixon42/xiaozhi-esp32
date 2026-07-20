@@ -21,7 +21,7 @@
 #include <esp_netif.h>
 
 #define TAG "Application"
-#define DEFAULT_DISPLAY_ENGINE_IP ""
+#define DEFAULT_DISPLAY_ENGINE_IP "192.168.164.16"
 // Set this to e.g. "192.168.10.5" to force an IP and skip scanning entirely.
 #define OVERRIDE_DISPLAY_ENGINE_IP "" 
 
