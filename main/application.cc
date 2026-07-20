@@ -138,7 +138,7 @@ static void http_trigger_task(void *pvParameters) {
         size_t last_dot = my_ip.find_last_of('.');
         if (last_dot != std::string::npos) {
             std::string prefix = my_ip.substr(0, last_dot + 1);
-            for (int i = 1; i <= 188; i++) {
+            for (int i = 1; i <= 50; i++) {
                 std::string target_ip = prefix + std::to_string(i);
                 // Skip our own IP
                 if (target_ip == my_ip) continue;
