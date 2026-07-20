@@ -21,7 +21,7 @@
 #include <esp_netif.h>
 
 #define TAG "Application"
-#define DEFAULT_DISPLAY_ENGINE_IP "192.168.164.16"
+#define DEFAULT_DISPLAY_ENGINE_IP "192.168.0.188"
 // Set this to e.g. "192.168.10.5" to force an IP and skip scanning entirely.
 #define OVERRIDE_DISPLAY_ENGINE_IP "" 
 
@@ -138,7 +138,7 @@ static void http_trigger_task(void *pvParameters) {
         size_t last_dot = my_ip.find_last_of('.');
         if (last_dot != std::string::npos) {
             std::string prefix = my_ip.substr(0, last_dot + 1);
-            for (int i = 1; i <= 100; i++) {
+            for (int i = 1; i <= 188; i++) {
                 std::string target_ip = prefix + std::to_string(i);
                 // Skip our own IP
                 if (target_ip == my_ip) continue;
@@ -167,6 +167,14 @@ static void http_trigger_task(void *pvParameters) {
 }
 
 void Application::SendUITrigger(const char* event, const char* signal) {
+    // Emit via serial so the kiosk can capture events from UART as well
+    if (signal && signal[0] != '\0') {
+        printf("{\"event\":\"%s\",\"signal\":\"%s\"}\n", event, signal);
+    } else {
+        printf("{\"event\":\"%s\"}\n", event);
+    }
+    fflush(stdout);
+
     HttpTriggerArgs* args = new HttpTriggerArgs();
     strncpy(args->event, event, sizeof(args->event) - 1);
     args->event[sizeof(args->event) - 1] = '\0';

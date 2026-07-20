@@ -310,10 +310,7 @@ void MimoEmojiDisplay::UpdateAnimation() {
                 auto sound_info = Lang::Monolog::SOUNDS[rand_idx];
                 auto& app = Application::GetInstance();
                 app.Schedule([&app, sound_info]() {
-                    printf("{\"event\": \"play_monolog\", \"file\": \"%s\"}\n", sound_info.filename);
-                    fflush(stdout);
-
-                    // Send UI Trigger for PLAY_MONOLOGUE
+                    // Send UI Trigger for PLAY_MONOLOGUE (serial + HTTP handled by SendUITrigger)
                     char signal_name[64];
                     strncpy(signal_name, sound_info.filename, sizeof(signal_name));
                     signal_name[sizeof(signal_name) - 1] = '\0';
